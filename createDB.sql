@@ -1,47 +1,59 @@
-CREATE TABLE produto(
-	produtoId INT UNIQUE PRIMARY KEY,
-	nomeProduto VARCHAR(45),
-	categoriaId Long FOREIGN KEY,
-	descricao VARCHAR(150),
-	preco DECIMAL
-)
-
 CREATE TABLE categoria(
-	categoriaId INT UNIQUE PRIMARY KEY,
-	nomeCategoria VARCHAR(20),
-)
+    categoriaId SERIAL PRIMARY KEY,
+    nomeCategoria VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE produto(
+    produtoId SERIAL PRIMARY KEY,
+    nomeProduto VARCHAR(45) NOT NULL,
+    categoriaId INT,
+    descricao VARCHAR(150),
+    preco DECIMAL(10,2) NOT NULL,
+    CONSTRAINT fk_categoria FOREIGN KEY (categoriaId) REFERENCES categoria(categoriaId)
+);
 
 CREATE TABLE funcionario(
-	funcionarioId INT UNIQUE PRIMARY KEY,
-	funcionarioNome VARCHAR(100),
-	funcionarioEmail VARCHAR(100),
-	funcionarioAtivo Boolean,
-	salario DECIMAL,
-)
+    funcionarioId SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    cargo VARCHAR(20) NOT NULL,
+    ativo BOOLEAN DEFAULT TRUE,
+    salario DECIMAL(10,2)
+);
 
-CREATE TABLE mesas(
-	mesaId SMALLINT PRIMARY KEY,
-	mesaTamanho SMALLINT,
-)
+CREATE TABLE mesa(
+    mesaId SERIAL PRIMARY KEY,
+    capacidade SMALLINT,
+    status CHAR(1) DEFAULT 'L'
+);
 
 CREATE TABLE pedido(
-	pedidoId  INT PRIMARY KEY,
-	funcionarioId INT FOREIGN KEY,
-	pedidoData DATE,
-	pedidoHorario TIME,
-	
-)
+    pedidoId SERIAL PRIMARY KEY,
+    funcionarioId INT,
+    mesaId INT,
+    dataHora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20),
+    observacao VARCHAR(50),
+    total DECIMAL(10,2) DEFAULT 0.00,
+    FOREIGN KEY (funcionarioId) REFERENCES funcionario(funcionarioId),
+    FOREIGN KEY (mesaId) REFERENCES mesa(mesaId)
+);
 
-CREATE JOIN TABLE produtoCategoria(
-	produtoId INT FOREIGN KEY,
-	categoriaId INT FOREIGN KEY,
-)
-CREATE JOIN TABLE pedidoFuncionario(
-	funcionarioId INT FOREIGN KEY,
-	pedidoId INT FOREIGN KEY,
-)
+CREATE TABLE item_pedido(
+    pedidoId INT,
+    produtoId INT,
+    quantidade INT NOT NULL,
+    preco_unitario DECIMAL(10,2) NOT NULL,
+    PRIMARY KEY (pedidoId, produtoId),
+    FOREIGN KEY (pedidoId) REFERENCES pedido(pedidoId),
+    FOREIGN KEY (produtoId) REFERENCES produto(produtoId)
+);
 
-CREATE JOIN TABLE pedidoMesa(
-	mesaId INT FOREIGN KEY,
-	pedidoId INT FOREIGN KEY,
-)
+CREATE TABLE pagamento(
+    pagamentoId SERIAL PRIMARY KEY,
+    pedidoId INT,
+    metodo VARCHAR(20),
+    valor DECIMAL(10,2),
+    dataHora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pedidoId) REFERENCES pedido(pedidoId)
+);
