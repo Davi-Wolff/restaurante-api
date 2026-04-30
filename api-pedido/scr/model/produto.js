@@ -4,7 +4,7 @@ const ProdutoModel = {
   //GET
 
   findAll: async () => {
-    const { rows } = await pool.query(`SELECT * FROM produtos ORDER BY ASC;`);
+    const { rows } = await pool.query(`SELECT * FROM produtos ORDER BY id ASC;`);
     return rows;
   },
 
@@ -25,39 +25,52 @@ const ProdutoModel = {
 
   findAllActives: async () => {
     const { rows } = await pool.query(
-      `SELECT * FROM produtos WHERE ativo = 1;`,
+      `SELECT * FROM produtos WHERE ativo = true;`,
     );
     return rows;
   },
 
   findByCategory: async (idCategoria) => {
-    const { rows } = await pool.query(`SELECT * FROM produtos WHERE categoriaId = $1;`,[idCategoria]);
+    const { rows } = await pool.query(
+      `SELECT * FROM produtos WHERE categoriaId = $1;`,
+      [idCategoria],
+    );
     return rows;
   },
 
   //POST
 
-  createNewProduct: async ({nome, idCategoria, descricao, preco}) => {
-    const {rows} = await pool.query(`INSERT INTO produtos (nome, idCategoria, descricao, preco) VALUES ($1, $2, $3, $4) RETURNING *;`,[nome, idCategoria, descricao, preco]);
+  createNewProduct: async ({ nome, idCategoria, descricao, preco }) => {
+    const { rows } = await pool.query(
+      `INSERT INTO produtos (nomeProduto, idCategoria, descricao, preco) VALUES ($1, $2, $3, $4) RETURNING *;`,
+      [nome, idCategoria, descricao, preco],
+    );
     return rows[0];
   },
 
   //PUT
-
-  updateProduto: async (id,{nome, idCategoria, descricao, preco}) => {
-    const { rows } = await pool.query("");
-    return rows;
-  },
 
   update: async (id, { nome, idCategoria, descricao, preco }) => {
     const fields = [];
     const values = [];
     let index = 1;
 
-    if (nome        !== undefined) { fields.push(`nome = $${index++}`);         values.push(nome); }
-    if (idCategoria !== undefined) { fields.push(`id_categoria = $${index++}`); values.push(idCategoria); }
-    if (descricao   !== undefined) { fields.push(`descricao = $${index++}`);    values.push(descricao); }
-    if (preco       !== undefined) { fields.push(`preco = $${index++}`);        values.push(preco); }
+    if (nome !== undefined) {
+      fields.push(`nome = $${index++}`);
+      values.push(nome);
+    }
+    if (idCategoria !== undefined) {
+      fields.push(`id_categoria = $${index++}`);
+      values.push(idCategoria);
+    }
+    if (descricao !== undefined) {
+      fields.push(`descricao = $${index++}`);
+      values.push(descricao);
+    }
+    if (preco !== undefined) {
+      fields.push(`preco = $${index++}`);
+      values.push(preco);
+    }
 
     // Nada para atualizar
     if (fields.length === 0) return null;
@@ -67,7 +80,7 @@ const ProdutoModel = {
     const query = `
       UPDATE produtos
          SET ${fields.join(", ")}
-       WHERE id = $${index}
+       WHERE produtoId = $${index}
       RETURNING *
     `;
 
@@ -76,4 +89,10 @@ const ProdutoModel = {
   },
 
   //DELETE (improvavel de ser usado, mas é bom ter)
+  delete: async (id) => {
+    const { rows } = await pool.query(`DELETE FROM produtos WHERE produtoId = $1;`, [
+      id,
+    ]);
+    return rows[0] || null;
+  },
 };
