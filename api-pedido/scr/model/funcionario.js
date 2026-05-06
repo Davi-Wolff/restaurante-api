@@ -18,7 +18,7 @@ const FuncionarioModel = {
     return rows[0] || null; //ainda vou fazer exceptions para não retornar null
   },
 
-  findByName: async (nome) => {
+  findByNameEmployee: async (nome) => {
     const { rows } = await pool.query(
       `SELECT FROM funcionarios WHERE funcionarioNome = $1;`,
       [nome],
